@@ -139,19 +139,26 @@ async function main() {
   var configGui = {
     dia: 1,
     latitude: 0,
-    longitude: 0
+    longitude: 0,
+    animate: false,
+    velocity: "50"
   }
 
   const gui = new dat.GUI();
 
-  gui.add(configGui, "dia", 1,51,1).onChange(drawScene);
+  gui.add(configGui, "dia", 1,51,1).onChange(drawScene).listen();
   gui.add(configGui, "latitude", -90,90,1).onChange(drawScene).listen();
   gui.add(configGui, "longitude", -180,180,1).onChange(drawScene).listen();
+  gui.add(configGui, "animate").onChange(drawScene).listen();
+  gui.add(configGui, "velocity").onChange(drawScene).listen();
+  
+
 
   var isMouseDown = false;
   var dragX, dragY, dragLat, dragLng;
-  var latitude = 0;
-  var longitude = 0;
+  var deltaTime;
+  var then = 0;
+  var lastLong = 0;
   
   canvas.addEventListener('mousedown', onMouseDown);
   canvas.addEventListener('mousemove', onMouseMove);
@@ -337,10 +344,27 @@ async function main() {
   requestAnimationFrame(drawScene);
   // drawScene();
   // Draw the scene.
-  function drawScene() {
-    // time = time * 0.0005;
+  function drawScene(now) {
+    now = now * 0.001;
 
-    
+    deltaTime = now - then;
+    then = now;
+
+
+    if(configGui.animate){
+      configGui.longitude = clampLng(configGui.longitude - deltaTime*parseInt(configGui.velocity), -180, 180);
+    }
+    if(configGui.longitude * lastLong < 0 && lastLong < 20 && lastLong > -20){
+      // console.log(configGui.longitude, lastLong);
+
+      if(configGui.dia < 51){
+        configGui.dia += 1
+      }
+    }
+    lastLong = configGui.longitude;
+
+
+
     twgl.resizeCanvasToDisplaySize(gl.canvas);
 
     
@@ -471,7 +495,12 @@ async function main() {
     return x < min ? min : x > max ? max : x;
   }
   function clampLng(lng) {
+    // % = resto da div
+    if (lng < 0){
+      return ((lng - 180) % 360) + 180;
+    }
     return ((lng + 180) % 360) - 180;
+
   }
   function dayDeaths(day,i){
     switch (day){
