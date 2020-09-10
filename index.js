@@ -233,7 +233,7 @@ async function main() {
     u_lightColor: light.color,
     u_specularColor: light.color,
     u_ambience: 0.1,
-    u_diffuse: 0.5,
+    u_diffuse: 0.7,
     u_specular: 0.1,
     u_brightness: 1.0,
   };
